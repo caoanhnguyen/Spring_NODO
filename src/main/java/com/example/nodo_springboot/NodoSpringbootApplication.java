@@ -1,7 +1,5 @@
 package com.example.nodo_springboot;
 
-import com.example.nodo_springboot.Config.AppConfig;
-import com.example.nodo_springboot.entities.Address;
 import com.example.nodo_springboot.entities.User;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -19,7 +17,7 @@ public class NodoSpringbootApplication {
         // Khởi tạo dùng IoC
         ApplicationContext context = new AnnotationConfigApplicationContext(NodoSpringbootApplication.class);
         User user = context.getBean(User.class);
-        System.out.println(user.getAddress().getCity()); // Sẽ in ra "Ha Noi "
+        System.out.println(user.getAddress().getCity()); // Sẽ in ra "Springfield"
     }
 
 }
