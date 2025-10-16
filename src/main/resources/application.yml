@@ -1,0 +1,9 @@
+# Cấu hình chung cho mọi profile
+spring:
+    profiles:
+      active: @spring.profiles.active@
+    jpa:
+      open-in-view: false
+      properties:
+        hibernate:
+          format_sql: true

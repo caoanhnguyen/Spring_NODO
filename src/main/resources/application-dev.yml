@@ -1,0 +1,38 @@
+# Profile: dev -> dùng H2 (embedded)
+server:
+  port: 8088
+
+
+spring:
+
+    config:
+      activate:
+        on-profile: dev
+
+    datasource:
+      driver-class-name: org.h2.Driver
+      url: jdbc:h2:mem:demo;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#      url: jdbc:h2:file:~/demo/h2db;MODE=MySQL;AUTO_SERVER=TRUE // Lưu file database vào ổ cứng, tự động chạy server mode khi ứng dụng chạy
+#      url: jdbc:h2:tcp://localhost:9094/~/h2serverdb;MODE=MySQL
+      username: sa
+      password:
+      hikari:
+        pool-name: Hikari-H2
+        maximum-pool-size: 5
+        minimum-idle: 1
+
+    jpa:
+      hibernate:
+        ddl-auto: update
+      database-platform: org.hibernate.dialect.H2Dialect
+      show-sql: true
+
+    h2:
+      console:
+        enabled: true
+        path: /h2-console
+        settings:
+          web-allow-others: true
+
+# Ghi chú: muốn dùng H2 server mode thay embedded, thay url như sau:
+# spring.datasource.url=jdbc:h2:tcp://localhost:9092/~/h2serverdb;MODE=MySQL
