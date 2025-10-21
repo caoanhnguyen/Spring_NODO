@@ -20,6 +20,9 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @EntityGraph(value = "Student.addresses", type = EntityGraph.EntityGraphType.LOAD)
     Page<Student> findAll(Pageable pageable);
 
+    @EntityGraph(value = "Student.addresses", type = EntityGraph.EntityGraphType.LOAD)
+    Student save(Student student);
+
 
     boolean existsByEmail(String email);
     // Tìm kiếm theo tên hoặc email, có phân trang
@@ -51,3 +54,4 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     Page<StudentNameEmailProjection> findByFullNameContaining(String name, Pageable pageable);
 }
+

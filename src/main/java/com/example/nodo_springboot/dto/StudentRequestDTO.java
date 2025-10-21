@@ -13,5 +13,8 @@ public class StudentRequestDTO {
     private String fullName;
     private String email;
     private String phoneNumber;
-    private List<AddressDTO> addresses;
+    private String status;
+    private String username;
+    private String password;
+    private List<AddressRequestDTO> addresses;
 }

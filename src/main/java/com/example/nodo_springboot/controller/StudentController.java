@@ -22,7 +22,7 @@ public class StudentController {
     private final StudentService studentService;
 
     @PostMapping
-    public ResponseEntity<StudentResponseDTO> create(@ModelAttribute StudentRequestDTO req) {
+    public ResponseEntity<StudentResponseDTO> create(@RequestBody StudentRequestDTO req) {
         if (studentService.existsByEmail(req.getEmail())) {
             return ResponseEntity.badRequest().build();
         }
