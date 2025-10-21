@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public Page<StudentResponseDTO> findAll(Pageable pageable) {
         Page<Student> page = repo.findAll(pageable);
         List<StudentResponseDTO> dtos = mapper.toStudentResponseDTOList(page.getContent());
@@ -53,6 +56,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+//    @Transactional
     public Optional<StudentResponseDTO> findById(Long id) {
         return repo.findById(id).map(mapper::toStudentResponseDTO);
     }

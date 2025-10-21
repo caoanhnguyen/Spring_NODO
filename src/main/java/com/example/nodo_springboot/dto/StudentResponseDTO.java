@@ -1,6 +1,7 @@
 package com.example.nodo_springboot.dto;
 
 import lombok.*;
+import java.util.List;
 
 @Data
 @Builder
@@ -11,4 +12,5 @@ public class StudentResponseDTO {
     private String fullName;
     private String email;
     private String phoneNumber;
+    private List<AddressDTO> addresses;
 }
