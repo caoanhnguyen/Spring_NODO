@@ -24,6 +24,7 @@ public interface StudentMapper {
 
     @InheritInverseConfiguration
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "status", constant = "INACTIVE")
     StudentResponseDTO toStudentResponseDTO(Student entity);
 
     List<StudentResponseDTO> toStudentResponseDTOList(List<Student> entities);

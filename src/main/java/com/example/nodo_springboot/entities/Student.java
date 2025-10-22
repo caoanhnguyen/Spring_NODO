@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "students")
 @Data
-
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedEntityGraph(

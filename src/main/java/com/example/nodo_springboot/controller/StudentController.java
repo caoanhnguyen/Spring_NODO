@@ -62,8 +62,8 @@ public class StudentController {
 
     @PostMapping("/search")
     public PageResponse<StudentResponseDTO> search(@RequestBody StudentSearchDTO dto,
-                                           @RequestParam(defaultValue = "0") int page,
-                                           @RequestParam(defaultValue = "10") int size) {
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return studentService.searchDynamic(dto, pageable);
     }

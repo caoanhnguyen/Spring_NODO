@@ -48,7 +48,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @Transactional
+//    @Transactional
     public Page<StudentResponseDTO> findAll(Pageable pageable) {
         Page<Student> page = repo.findAll(pageable);
         List<StudentResponseDTO> dtos = mapper.toStudentResponseDTOList(page.getContent());
@@ -77,91 +77,91 @@ public class StudentServiceImpl implements StudentService {
 
     // JPQL Dynamic Search
 
-//    @Override
-//    public PageResponse<StudentResponseDTO> searchDynamic(StudentSearchDTO dto, Pageable pageable) {
-//        StringBuilder jpql = new StringBuilder("SELECT s FROM Student s WHERE 1=1 ");
-//        Map<String, Object> params = new HashMap<>();
-//        if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
-//            jpql.append(" AND s.fullName LIKE :fullName");
-//            params.put("fullName", "%" + dto.getFullName() + "%");
-//        }
-//        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
-//            jpql.append(" AND s.email LIKE :email");
-//            params.put("email", "%" + dto.getEmail() + "%");
-//        }
-//        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isEmpty()) {
-//            jpql.append(" AND s.phoneNumber LIKE :phoneNumber");
-//            params.put("phoneNumber", "%" + dto.getPhoneNumber() + "%");
-//        }
-//        if (dto.getCreatedAtFrom() != null) {
-//            jpql.append(" AND s.createdAt >= :createdAtFrom");
-//            params.put("createdAtFrom", dto.getCreatedAtFrom());
-//        }
-//        if (dto.getCreatedAtTo() != null) {
-//            jpql.append(" AND s.createdAt <= :createdAtTo");
-//            params.put("createdAtTo", dto.getCreatedAtTo());
-//        }
-//        if (dto.getLastModifiedAtFrom() != null) {
-//            jpql.append(" AND s.lastModifiedAt >= :lastModifiedAtFrom");
-//            params.put("lastModifiedAtFrom", dto.getLastModifiedAtFrom());
-//        }
-//        if (dto.getLastModifiedAtTo() != null) {
-//            jpql.append(" AND s.lastModifiedAt <= :lastModifiedAtTo");
-//            params.put("lastModifiedAtTo", dto.getLastModifiedAtTo());
-//        }
-//        TypedQuery<Student> query = entityManager.createQuery(jpql.toString(), Student.class);
-//        params.forEach(query::setParameter);
-//        query.setFirstResult((int) pageable.getOffset());
-//        query.setMaxResults(pageable.getPageSize());
-//        List<Student> students = query.getResultList();
-//        long total = countDynamic(dto);
-//        List<StudentResponseDTO> dtos = mapper.toStudentResponseDTOList(students);
-//        int totalPages = (int) Math.ceil((double) total / pageable.getPageSize());
-//        return new PageResponse<>(dtos, pageable.getPageNumber(), pageable.getPageSize(), total, totalPages);
-//    }
-
-    // Criteria API Dynamic Search
     @Override
     public PageResponse<StudentResponseDTO> searchDynamic(StudentSearchDTO dto, Pageable pageable) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Student> cq = cb.createQuery(Student.class);
-        Root<Student> root = cq.from(Student.class);
-        List<Predicate> predicates = new java.util.ArrayList<>();
+        StringBuilder jpql = new StringBuilder("SELECT s FROM Student s WHERE 1=1 ");
+        Map<String, Object> params = new HashMap<>();
         if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
-            predicates.add(cb.like(cb.lower(root.get("fullName")), "%" + dto.getFullName().toLowerCase() + "%"));
+            jpql.append(" AND s.fullName LIKE :fullName");
+            params.put("fullName", "%" + dto.getFullName() + "%");
         }
         if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
-            predicates.add(cb.like(cb.lower(root.get("email")), "%" + dto.getEmail().toLowerCase() + "%"));
+            jpql.append(" AND s.email LIKE :email");
+            params.put("email", "%" + dto.getEmail() + "%");
         }
         if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isEmpty()) {
-            predicates.add(cb.like(cb.lower(root.get("phoneNumber")), "%" + dto.getPhoneNumber().toLowerCase() + "%"));
+            jpql.append(" AND s.phoneNumber LIKE :phoneNumber");
+            params.put("phoneNumber", "%" + dto.getPhoneNumber() + "%");
         }
-        cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.asc(root.get("id")));
-        TypedQuery<Student> query = entityManager.createQuery(cq);
+        if (dto.getCreatedAtFrom() != null) {
+            jpql.append(" AND s.createdAt >= :createdAtFrom");
+            params.put("createdAtFrom", dto.getCreatedAtFrom());
+        }
+        if (dto.getCreatedAtTo() != null) {
+            jpql.append(" AND s.createdAt <= :createdAtTo");
+            params.put("createdAtTo", dto.getCreatedAtTo());
+        }
+        if (dto.getLastModifiedAtFrom() != null) {
+            jpql.append(" AND s.lastModifiedAt >= :lastModifiedAtFrom");
+            params.put("lastModifiedAtFrom", dto.getLastModifiedAtFrom());
+        }
+        if (dto.getLastModifiedAtTo() != null) {
+            jpql.append(" AND s.lastModifiedAt <= :lastModifiedAtTo");
+            params.put("lastModifiedAtTo", dto.getLastModifiedAtTo());
+        }
+        TypedQuery<Student> query = entityManager.createQuery(jpql.toString(), Student.class);
+        params.forEach(query::setParameter);
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
         List<Student> students = query.getResultList();
-        // Count query
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<Student> countRoot = countQuery.from(Student.class);
-        countQuery.select(cb.count(countRoot));
-        List<Predicate> countPredicates = new java.util.ArrayList<>();
-        if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
-            countPredicates.add(cb.like(cb.lower(countRoot.get("fullName")), "%" + dto.getFullName().toLowerCase() + "%"));
-        }
-        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
-            countPredicates.add(cb.like(cb.lower(countRoot.get("email")), "%" + dto.getEmail().toLowerCase() + "%"));
-        }
-        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isEmpty()) {
-            countPredicates.add(cb.like(cb.lower(countRoot.get("phoneNumber")), "%" + dto.getPhoneNumber().toLowerCase() + "%"));
-        }
-        countQuery.where(countPredicates.toArray(new Predicate[0]));
-        long total = entityManager.createQuery(countQuery).getSingleResult();
+        long total = countDynamic(dto);
         List<StudentResponseDTO> dtos = mapper.toStudentResponseDTOList(students);
         int totalPages = (int) Math.ceil((double) total / pageable.getPageSize());
         return new PageResponse<>(dtos, pageable.getPageNumber(), pageable.getPageSize(), total, totalPages);
     }
+
+    // Criteria API Dynamic Search
+//    @Override
+//    public PageResponse<StudentResponseDTO> searchDynamic(StudentSearchDTO dto, Pageable pageable) {
+//        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+//        CriteriaQuery<Student> cq = cb.createQuery(Student.class);
+//        Root<Student> root = cq.from(Student.class);
+//        List<Predicate> predicates = new java.util.ArrayList<>();
+//        if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
+//            predicates.add(cb.like(cb.lower(root.get("fullName")), "%" + dto.getFullName().toLowerCase() + "%"));
+//        }
+//        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+//            predicates.add(cb.like(cb.lower(root.get("email")), "%" + dto.getEmail().toLowerCase() + "%"));
+//        }
+//        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isEmpty()) {
+//            predicates.add(cb.like(cb.lower(root.get("phoneNumber")), "%" + dto.getPhoneNumber().toLowerCase() + "%"));
+//        }
+//        cq.where(predicates.toArray(new Predicate[0]));
+//        cq.orderBy(cb.asc(root.get("id")));
+//        TypedQuery<Student> query = entityManager.createQuery(cq);
+//        query.setFirstResult((int) pageable.getOffset());
+//        query.setMaxResults(pageable.getPageSize());
+//        List<Student> students = query.getResultList();
+//        // Count query
+//        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+//        Root<Student> countRoot = countQuery.from(Student.class);
+//        countQuery.select(cb.count(countRoot));
+//        List<Predicate> countPredicates = new java.util.ArrayList<>();
+//        if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
+//            countPredicates.add(cb.like(cb.lower(countRoot.get("fullName")), "%" + dto.getFullName().toLowerCase() + "%"));
+//        }
+//        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+//            countPredicates.add(cb.like(cb.lower(countRoot.get("email")), "%" + dto.getEmail().toLowerCase() + "%"));
+//        }
+//        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isEmpty()) {
+//            countPredicates.add(cb.like(cb.lower(countRoot.get("phoneNumber")), "%" + dto.getPhoneNumber().toLowerCase() + "%"));
+//        }
+//        countQuery.where(countPredicates.toArray(new Predicate[0]));
+//        long total = entityManager.createQuery(countQuery).getSingleResult();
+//        List<StudentResponseDTO> dtos = mapper.toStudentResponseDTOList(students);
+//        int totalPages = (int) Math.ceil((double) total / pageable.getPageSize());
+//        return new PageResponse<>(dtos, pageable.getPageNumber(), pageable.getPageSize(), total, totalPages);
+//    }
 
 
     private long countDynamic(StudentSearchDTO dto) {
