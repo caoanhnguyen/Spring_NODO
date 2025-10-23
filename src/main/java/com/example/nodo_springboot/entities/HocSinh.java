@@ -1,8 +1,11 @@
 package com.example.nodo_springboot.entities;
 
+import com.example.nodo_springboot.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -12,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class HocSinh {
+public class HocSinh extends BaseEntity {
     @Id
     @Column(name = "MaHS", length = 10)
     String maHS;
@@ -24,9 +27,12 @@ public class HocSinh {
     String hoTenPH;
 
     @Column(name = "GioiTinh", length = 3)
-    String gioiTinh;
+    Gender gioiTinh;
 
-    @Column(name = "DiaChi", length = 255)
+    @Column(name = "NgaySinh")
+    LocalDate ngaySinh;
+
+    @Column(name = "DiaChi")
     String diaChi;
 
     // Relationships
@@ -38,4 +44,3 @@ public class HocSinh {
     @OneToMany(mappedBy = "hocSinh")
     List<KetQuaHocTap> ketQuaHocTapList;
 }
-

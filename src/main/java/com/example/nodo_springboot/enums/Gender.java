@@ -3,10 +3,10 @@ package com.example.nodo_springboot.enums;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum Gender {
-    @JsonProperty("Nam")
+    @JsonProperty("Male")
     MALE,
-    @JsonProperty("Nữ")
+    @JsonProperty("Female")
     FEMALE,
-    @JsonProperty("Khác")
+    @JsonProperty("Other")
     OTHER
 }

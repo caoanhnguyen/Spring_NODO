@@ -1,8 +1,13 @@
 package com.example.nodo_springboot.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import java.util.List;
 
 @Entity
@@ -12,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Lop {
     @Id
     @Column(name = "MaLop", length = 10, columnDefinition = "CHAR(10)")
@@ -30,8 +36,10 @@ public class Lop {
     GiaoVien giaoVienCN;
 
     @OneToMany(mappedBy = "lop")
+    @JsonIgnore
     List<HocSinh> hocSinhList;
 
     @OneToMany(mappedBy = "lop")
+    @JsonIgnore
     List<PhuTrachBoMon> phuTrachBoMonList;
 }
