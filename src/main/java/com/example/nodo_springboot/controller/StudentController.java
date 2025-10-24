@@ -3,10 +3,7 @@ package com.example.nodo_springboot.controller;
 import com.example.nodo_springboot.dto.ResponseData;
 import com.example.nodo_springboot.service.StudentService;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/students")
@@ -29,5 +26,10 @@ public class StudentController {
     ) {
         Pageable pageable = Pageable.ofSize(size).withPage(page);
         return studentService.searchStudents(maHS, hoTenHS, maLop, diaChi, pageable);
+    }
+
+    @GetMapping("/detail/{maHS}")
+    public ResponseData<?> getStudentDetail(@PathVariable String maHS) {
+        return studentService.getStudentDetail(maHS);
     }
 }

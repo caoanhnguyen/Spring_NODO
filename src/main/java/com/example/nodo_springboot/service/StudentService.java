@@ -9,4 +9,6 @@ public interface StudentService {
     Page<?> findAllStudents(Pageable pageable);
 
     ResponseData<PageResponseDTO> searchStudents(String maHS, String hoTenHS, String maLop, String diaChi, Pageable pageable);
+
+    ResponseData<?> getStudentDetail(String maHS);
 }

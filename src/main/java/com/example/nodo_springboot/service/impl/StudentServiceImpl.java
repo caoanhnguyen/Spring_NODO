@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public ResponseData<PageResponseDTO> searchStudents(String maHS, String hoTenHS, String maLop, String diaChi, Pageable pageable) {
         boolean joinLop = maLop != null && !maLop.isBlank();
 
@@ -154,6 +156,26 @@ public class StudentServiceImpl implements StudentService {
         return ResponseData.<PageResponseDTO>builder()
                 .data(pageResponeDTO)
                 .message("Search students successfully")
+                .status(HttpStatus.OK.value())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseData<?> getStudentDetail(String maHS) {
+        Optional<HocSinh> optionalHocSinh = studentRepository.findById(maHS);
+        if (optionalHocSinh.isEmpty()) {
+            return ResponseData.builder()
+                    .data(null)
+                    .message("Student not found with maHS: " + maHS)
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .build();
+        }
+        HocSinh hocSinh = optionalHocSinh.get();
+        var studentDetailDTO = studentMapper.toDetailDto(hocSinh);
+        return ResponseData.builder()
+                .data(studentDetailDTO)
+                .message("Get student detail successfully")
                 .status(HttpStatus.OK.value())
                 .build();
     }

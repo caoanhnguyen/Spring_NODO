@@ -37,7 +37,7 @@ public class HocSinh extends BaseEntity {
 
     // Relationships
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MaLop", referencedColumnName = "MaLop")
     Lop lop;
 

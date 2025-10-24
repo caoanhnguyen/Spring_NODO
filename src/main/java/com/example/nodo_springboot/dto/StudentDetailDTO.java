@@ -1,12 +1,12 @@
 package com.example.nodo_springboot.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Setter;
+
+import java.util.List;
 
 @Setter
-@Getter
-@NoArgsConstructor
-public class StudentResponseDTO {
+public class StudentDetailDTO {
     @JsonProperty("ma_hs")
     String maHS;
     @JsonProperty("ho_ten_hs")
@@ -23,10 +23,8 @@ public class StudentResponseDTO {
     String createAt;
     @JsonProperty("updated_at")
     String updateAt;
-    @JsonProperty("ma_lop")
-    String maLop;
-    @JsonProperty("gvcn")
-    String GVCN;
-
-
+    @JsonProperty("lop")
+    LopResponseDTO lopResponseDTO;
+    @JsonProperty("diem")
+    List<String> diem;
 }
