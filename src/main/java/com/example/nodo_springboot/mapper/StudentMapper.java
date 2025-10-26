@@ -1,6 +1,7 @@
 package com.example.nodo_springboot.mapper;
 
 import com.example.nodo_springboot.dto.StudentDetailDTO;
+import com.example.nodo_springboot.dto.StudentRequestDTO;
 import com.example.nodo_springboot.dto.StudentResponseDTO;
 import com.example.nodo_springboot.entities.HocSinh;
 import org.mapstruct.*;
@@ -25,6 +26,11 @@ public interface StudentMapper {
 
     default LocalDateTime stringToLocalDateTime(String str) {
         return str != null ? LocalDateTime.parse(str, DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null;
+    }
+
+    @Named("stringToLocalDate")
+    default LocalDate stringToLocalDate(String str) {
+        return str != null ? LocalDate.parse(str, DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null;
     }
 
     // Mapping điểm học tập từ entity HocSinh sang trng List<String> diem trong StudentDetailDTO, định dạng điểm là "Môn: Điểm"
@@ -54,6 +60,11 @@ public interface StudentMapper {
     @Mapping(target = "lopResponseDTO", source = "lop")
     @Mapping(target = "diem", expression = "java(mapDiemHocTap(hocSinh))")
     StudentDetailDTO toDetailDto(HocSinh hocSinh);
+
+    // =====================================================================================
+
+    @Mapping(target = "ngaySinh", source = "ngaySinh", qualifiedByName = ("stringToLocalDate"))
+    HocSinh toEntity(StudentRequestDTO studentRequestDTO);
 
 }
 

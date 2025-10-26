@@ -1,6 +1,7 @@
 package com.example.nodo_springboot.controller;
 
 import com.example.nodo_springboot.dto.ResponseData;
+import com.example.nodo_springboot.dto.StudentRequestDTO;
 import com.example.nodo_springboot.service.StudentService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -31,5 +32,10 @@ public class StudentController {
     @GetMapping("/detail/{maHS}")
     public ResponseData<?> getStudentDetail(@PathVariable String maHS) {
         return studentService.getStudentDetail(maHS);
+    }
+
+    @PostMapping("")
+    public ResponseData<?> createStudent(@RequestBody StudentRequestDTO studentRequestDTO) {
+        return studentService.createStudent(studentRequestDTO);
     }
 }

@@ -2,13 +2,12 @@ package com.example.nodo_springboot.service.impl;
 
 import com.example.nodo_springboot.dto.PageResponseDTO;
 import com.example.nodo_springboot.dto.ResponseData;
+import com.example.nodo_springboot.dto.StudentRequestDTO;
 import com.example.nodo_springboot.dto.StudentResponseDTO;
 import com.example.nodo_springboot.entities.HocSinh;
 import com.example.nodo_springboot.mapper.StudentMapper;
 import com.example.nodo_springboot.service.StudentService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -178,5 +177,85 @@ public class StudentServiceImpl implements StudentService {
                 .message("Get student detail successfully")
                 .status(HttpStatus.OK.value())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseData<?> createStudent(StudentRequestDTO dto) {
+
+        // LƯU flush mode hiện tại và đặt về COMMIT để tránh auto-flush trước query
+        FlushModeType prev = em.getFlushMode();
+        em.setFlushMode(FlushModeType.COMMIT);
+        try {
+            List<String> timeline = new ArrayList<>();
+
+            HocSinh hsTransient = studentMapper.toEntity(dto); // TRANSIENT
+            timeline.add("1) TRANSIENT: em.contains(hsTransient) = " + em.contains(hsTransient));
+
+            em.persist(hsTransient); // -> MANAGED (chưa auto-flush vì COMMIT)
+            timeline.add("2) MANAGED (after persist): em.contains(hsTransient) = " + em.contains(hsTransient));
+
+            // Thay đổi khi đang MANAGED, vẫn chưa flush
+            hsTransient.setHoTenHS("Name after persist (managed)");
+
+            // Gọi find ở đây sẽ KHÔNG gây INSERT trước query (vì flush mode = COMMIT)
+            HocSinh createdHocSinh = em.find(HocSinh.class, hsTransient.getMaHS());
+            timeline.add("2.x) FIND returns from PC, no auto-flush");
+
+            // Chủ động flush khi bạn muốn (chỉ 1 INSERT với giá trị cuối cùng)
+            em.flush();
+            timeline.add("2.1) FLUSH: đồng bộ INSERT ra DB");
+
+            System.out.println("Name after flush: " + createdHocSinh.getHoTenHS());
+            System.out.println("createdHS status after flush: " + em.contains(createdHocSinh));
+
+            // DETACH
+            em.detach(createdHocSinh);
+            timeline.add("3) DETACHED: em.contains(createdHocSinh) = " + em.contains(createdHocSinh));
+
+            createdHocSinh.setHoTenHS("Changed while DETACHED (no SQL)");
+
+            HocSinh hsManaged = em.merge(createdHocSinh); // Managed copy
+            System.out.println("UPDATE");
+            timeline.add("4) MERGE → MANAGED copy: em.contains(hsManaged) = " + em.contains(hsManaged));
+            System.out.println("createdHS status: "+ em.contains(createdHocSinh));
+            System.out.println("Name after merge: " + hsManaged.getHoTenHS());
+
+            hsManaged.setHoTenHS("Name after merge (managed)");
+
+            System.out.println("Before REFRESH: " + hsManaged.getHoTenHS());
+
+            // REFRESH (đọc lại từ DB, bỏ thay đổi chưa flush trong PC nếu có)
+            em.refresh(hsManaged);
+            timeline.add("5) REFRESH: tên sau refresh = " + hsManaged.getHoTenHS());
+
+            hsManaged.setHoTenHS("Name before remove (managed again)");
+
+            // REMOVE → trạng thái DELETED trong PC (Hibernate: contains trả false)
+            em.remove(hsManaged);
+            timeline.add("6) REMOVED: em.contains(hsManaged) = " + em.contains(hsManaged));
+
+            em.flush(); // DELETE
+            timeline.add("6.1) FLUSH: DELETE đã được gửi xuống DB");
+
+            // Re-create để có dữ liệu trả về
+            HocSinh recreated = studentMapper.toEntity(dto);
+            recreated.setHoTenHS("Final Name (re-created after delete)");
+            em.persist(recreated); // INSERT sẽ diễn ra lúc commit hoặc flush
+            timeline.add("7) RE-CREATED: em.contains(recreated) = " + em.contains(recreated));
+
+            return ResponseData.builder()
+                    .data(Map.of(
+                            "student", studentMapper.toDto(recreated),
+                            "lifecycleTimeline", timeline
+                    ))
+                    .message("Lifecycle demo executed successfully")
+                    .status(HttpStatus.CREATED.value())
+                    .build();
+
+        } finally {
+            // KHÔI PHỤC flush mode ban đầu để không ảnh hưởng nơi khác
+            em.setFlushMode(prev);
+        }
     }
 }
