@@ -22,9 +22,11 @@ public class MonHoc {
 
     // Relationships
 
-    @OneToMany(mappedBy = "monHoc")
+    // Subject -> KetQuaHocTap: grades belong to student+subject; do NOT cascade from subject side by default.
+    @OneToMany(mappedBy = "monHoc", fetch = FetchType.LAZY)
     List<KetQuaHocTap> ketQuaHocTapList;
 
-    @OneToMany(mappedBy = "monHoc")
+    // Subject -> PhuTrachBoMon: association entity. No cascade here.
+    @OneToMany(mappedBy = "monHoc", fetch = FetchType.LAZY)
     List<PhuTrachBoMon> phuTrachBoMonList;
 }

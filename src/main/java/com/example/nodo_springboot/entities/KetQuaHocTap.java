@@ -27,14 +27,14 @@ public class KetQuaHocTap {
 
     // Relationships
 
-    @ManyToOne
+    // This is the owner side of the relation; we do not cascade from grade to student/subject.
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("maHS")
     @JoinColumn(name = "MaHS")
     HocSinh hocSinh;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("maMH")
     @JoinColumn(name = "MaMH")
     MonHoc monHoc;
 }
-

@@ -13,5 +13,10 @@ public interface StudentService {
 
     ResponseData<?> getStudentDetail(String maHS);
 
-    ResponseData<?> createStudent(StudentRequestDTO studentRequestDTO);
+    ResponseData<?> addStudent(StudentRequestDTO studentRequestDTO);
+
+    ResponseData<?> updateStudent(String maHS, StudentRequestDTO studentRequestDTO);
+
+    ResponseData<?> deleteStudent(String maHS);
+//    ResponseData<?> createStudent(StudentRequestDTO studentRequestDTO);
 }

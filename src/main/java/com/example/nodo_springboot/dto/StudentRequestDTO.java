@@ -10,11 +10,15 @@ public class StudentRequestDTO {
     private String maHS;
     @JsonProperty("ho_ten_hs")
     private String hoTenHS;
+    @JsonProperty("ho_ten_phu_huynh")
+    private String hoTenPH;
     @JsonProperty("ngay_sinh")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private String ngaySinh;
     @JsonProperty("dia_chi")
     private String diaChi;
+    @JsonProperty("gioi_tinh")
+    private String gioiTinh;
     @JsonProperty("ma_lop")
     private String maLop;
 }

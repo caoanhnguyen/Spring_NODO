@@ -7,5 +7,10 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface LopMapper {
 
+
+    Lop toEntity(LopResponseDTO lopResponseDTO);
+
+    Lop getLopFromMaLop(String maLop);
+
     LopResponseDTO toLopResponseDTO(Lop lop);
 }

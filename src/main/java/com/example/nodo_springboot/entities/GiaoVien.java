@@ -25,11 +25,15 @@ public class GiaoVien {
 
     // Relationships
 
-    @OneToMany(mappedBy = "giaoVienCN")
+    // Teacher -> Lop (homeroom): one teacher may have many classes. We do NOT cascade REMOVE because
+    // deleting a teacher shouldn't delete classes. Keep LAZY.
+    @OneToMany(mappedBy = "giaoVienCN", fetch = FetchType.LAZY)
     @JsonIgnore
     List<Lop> lopChuNhiem;
 
-    @OneToMany(mappedBy = "giaoVienPhuTrach", cascade = CascadeType.ALL)
+    // Teacher -> PhuTrachBoMon: this is effectively an association entity owned by teacher; cascading ALL
+    // here is reasonable if PhuTrachBoMon has no lifecycle outside the teacher domain.
+    @OneToMany(mappedBy = "giaoVienPhuTrach", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     List<PhuTrachBoMon> phuTrachBoMonList;
 }

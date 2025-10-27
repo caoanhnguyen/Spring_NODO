@@ -37,10 +37,14 @@ public class HocSinh extends BaseEntity {
 
     // Relationships
 
+    // Student -> Lop: many students belong to one class. Use LAZY to avoid loading Lop unless needed.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MaLop", referencedColumnName = "MaLop")
     Lop lop;
 
-    @OneToMany(mappedBy = "hocSinh")
+    // Student -> KetQuaHocTap: one-to-many. We often want to cascade PERSIST/REMOVE when the student's lifecycle
+    // controls their grades. However, if grades are managed independently, avoid cascading REMOVE. Here we allow
+    // CascadeType.ALL as a reasonable default for demo apps; adjust for production per business rules.
+    @OneToMany(mappedBy = "hocSinh", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     List<KetQuaHocTap> ketQuaHocTapList;
 }

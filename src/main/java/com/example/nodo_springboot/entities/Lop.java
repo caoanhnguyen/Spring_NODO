@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
 
@@ -31,15 +29,26 @@ public class Lop {
 
     // Relationships
 
-    @ManyToOne
+    // Many classrooms can have one homeroom teacher. We keep LAZY to avoid loading teachers every time a class is fetched.
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MaGVCN", referencedColumnName = "MaGV")
     GiaoVien giaoVienCN;
 
-    @OneToMany(mappedBy = "lop")
+    // Một lớp có nhiều học sinh. Sử dụng LAZY (mặc định cho collections) để tránh vấn đề N+1; không cascade REMOVE ở đây vì
+    // việc xóa một lớp không nên xóa học sinh trong nhiều bối cảnh nghiệp vụ. Cascade PERSIST/MERGE thường không cần thiết
+    // từ phía cha; để trống để an toàn (ứng dụng nên quản lý vòng đời học sinh một cách rõ ràng).
+    @OneToMany(mappedBy = "lop", fetch = FetchType.LAZY)
     @JsonIgnore
     List<HocSinh> hocSinhList;
 
-    @OneToMany(mappedBy = "lop")
+    // Helper method to add a student to the class while maintaining bidirectional relationship
+    public void addHocSinh(HocSinh hocSinh) {
+        hocSinh.setLop(this);
+        this.getHocSinhList().add(hocSinh);
+    }
+
+    // PhuTrachBoMon uses composite PK and is owned by teacher/subject relationships. Keep LAZY and no cascade here.
+    @OneToMany(mappedBy = "lop", fetch = FetchType.LAZY)
     @JsonIgnore
     List<PhuTrachBoMon> phuTrachBoMonList;
 }

@@ -35,7 +35,25 @@ public class StudentController {
     }
 
     @PostMapping("")
-    public ResponseData<?> createStudent(@RequestBody StudentRequestDTO studentRequestDTO) {
-        return studentService.createStudent(studentRequestDTO);
+    public ResponseData<?> addStudent(@RequestBody StudentRequestDTO studentRequestDTO) {
+        return studentService.addStudent(studentRequestDTO);
     }
+
+    @PatchMapping("/{maHS}")
+    public ResponseData<?> updateStudent(@PathVariable String maHS,
+                                         @RequestBody StudentRequestDTO studentRequestDTO) {
+        return studentService.updateStudent(maHS, studentRequestDTO);
+    }
+
+    @DeleteMapping("/{maHS}")
+    public ResponseData<?> deleteStudent(@PathVariable String maHS) {
+        return studentService.deleteStudent(maHS);
+    }
+
+//    @PostMapping("")
+//    public ResponseData<?> createStudent(@RequestBody StudentRequestDTO studentRequestDTO) {
+//        return studentService.createStudent(studentRequestDTO);
+//    }
+
+
 }

@@ -20,9 +20,9 @@ public class StudentDetailDTO {
     @JsonProperty("dia_chi")
     String diaChi;
     @JsonProperty("created_at")
-    String createAt;
+    String createdAt;
     @JsonProperty("updated_at")
-    String updateAt;
+    String updatedAt;
     @JsonProperty("lop")
     LopResponseDTO lopResponseDTO;
     @JsonProperty("diem")

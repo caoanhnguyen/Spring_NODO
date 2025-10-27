@@ -23,6 +23,8 @@ public class PhuTrachBoMon {
 
     // Relationships
 
+    // This is a join/association table modeled as entity with composite id. The association fields are the owners
+    // of the relationship. We generally do NOT cascade from this side to the referenced entities.
     @ManyToOne
     @MapsId("maGVPT")
     @JoinColumn(name = "MaGVPT", referencedColumnName = "MaGV", nullable = false, columnDefinition = "CHAR(10)")

@@ -33,6 +33,7 @@ public interface StudentMapper {
         return str != null ? LocalDate.parse(str, DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null;
     }
 
+
     // Mapping điểm học tập từ entity HocSinh sang trng List<String> diem trong StudentDetailDTO, định dạng điểm là "Môn: Điểm"
     default List<String> mapDiemHocTap(HocSinh hocSinh) {
 
@@ -49,13 +50,13 @@ public interface StudentMapper {
 
     @Mapping(target = "maLop", source = "lop.maLop")
     @Mapping(target = "GVCN", source = "lop.giaoVienCN.hoTenGV")
-    @Mapping(target = "createAt", source = "createdAt", qualifiedByName = "localDateTimeToString")
-    @Mapping(target = "updateAt", source = "updatedAt", qualifiedByName = "localDateTimeToString")
+    @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "localDateTimeToString")
+    @Mapping(target = "updatedAt", source = "updatedAt", qualifiedByName = "localDateTimeToString")
     @Mapping(target = "ngaySinh", source = "ngaySinh", qualifiedByName = "localDateToString")
     StudentResponseDTO toDto(HocSinh hocSinh);
 
-    @Mapping(target = "createAt", source = "createdAt", qualifiedByName = "localDateTimeToString")
-    @Mapping(target = "updateAt", source = "updatedAt", qualifiedByName = "localDateTimeToString")
+    @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "localDateTimeToString")
+    @Mapping(target = "updatedAt", source = "updatedAt", qualifiedByName = "localDateTimeToString")
     @Mapping(target = "ngaySinh", source = "ngaySinh", qualifiedByName = "localDateToString")
     @Mapping(target = "lopResponseDTO", source = "lop")
     @Mapping(target = "diem", expression = "java(mapDiemHocTap(hocSinh))")
@@ -65,6 +66,10 @@ public interface StudentMapper {
 
     @Mapping(target = "ngaySinh", source = "ngaySinh", qualifiedByName = ("stringToLocalDate"))
     HocSinh toEntity(StudentRequestDTO studentRequestDTO);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "ngaySinh", source = "ngaySinh", qualifiedByName = ("stringToLocalDate"))
+    void updateEntityFromDto(StudentRequestDTO studentRequestDTO, @MappingTarget HocSinh hocSinh);
 
 }
 

@@ -18,10 +18,10 @@ public class Comment {
 
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY) // Set fetch to LAZY
     @JoinColumns({
             @JoinColumn(name = "post_id", referencedColumnName = "postId"),
             @JoinColumn(name = "category_id", referencedColumnName = "categoryId")
     })
-    private Post post;
+    private Post post; // Comment should not cascade to post; it's child/owner of relationship.
 }
