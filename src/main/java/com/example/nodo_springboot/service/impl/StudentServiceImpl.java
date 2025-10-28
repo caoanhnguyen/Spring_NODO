@@ -194,7 +194,6 @@ public class StudentServiceImpl implements StudentService {
             Lop lop = lopRepository.findById(studentRequestDTO.getMaLop())
                 .orElseThrow(() -> new RuntimeException("Lop not found with maLop: " + studentRequestDTO.getMaLop()));
             student.setLop(lop);
-            lop.getHocSinhList().add(student);
         }
 
         student = studentRepository.save(student);
