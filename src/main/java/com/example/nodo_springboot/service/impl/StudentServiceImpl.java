@@ -1,13 +1,15 @@
 package com.example.nodo_springboot.service.impl;
 
-import com.example.nodo_springboot.dto.PageResponseDTO;
-import com.example.nodo_springboot.dto.ResponseData;
-import com.example.nodo_springboot.dto.StudentRequestDTO;
-import com.example.nodo_springboot.dto.StudentResponseDTO;
+import com.example.nodo_springboot.dto.*;
 import com.example.nodo_springboot.entities.HocSinh;
+import com.example.nodo_springboot.entities.KetQuaHocTap;
 import com.example.nodo_springboot.entities.Lop;
+import com.example.nodo_springboot.entities.MonHoc;
+import com.example.nodo_springboot.mapper.KQHTMapper;
 import com.example.nodo_springboot.mapper.StudentMapper;
+import com.example.nodo_springboot.repository.KQHTRepository;
 import com.example.nodo_springboot.repository.LopRepository;
+import com.example.nodo_springboot.repository.MonHocRepository;
 import com.example.nodo_springboot.repository.StudentRepository;
 import com.example.nodo_springboot.service.StudentService;
 import jakarta.persistence.*;
@@ -26,14 +28,20 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
     private final LopRepository lopRepository;
+    private final KQHTRepository kqhtRepository;
+    private final KQHTMapper kqhtMapper;
+    private final MonHocRepository monHocRepository;
 
     @PersistenceContext
     private EntityManager em;
 
-    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LopRepository lopRepository) {
+    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LopRepository lopRepository, KQHTRepository kqhtRepository, KQHTMapper kqhtMapper, MonHocRepository monHocRepository) {
         this.studentRepository = studentRepository;
         this.studentMapper = studentMapper;
         this.lopRepository = lopRepository;
+        this.kqhtRepository = kqhtRepository;
+        this.kqhtMapper = kqhtMapper;
+        this.monHocRepository = monHocRepository;
     }
 
     @Override
@@ -253,6 +261,43 @@ public class StudentServiceImpl implements StudentService {
                 .message("Student deleted successfully")
                 .status(HttpStatus.OK.value())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void createStudentWithTransaction(String caseNumber, StudentWithScoreReqDTO dto) {
+        // Lưu học sinh (save A)
+        System.out.println("[Tx-Main] Đang lưu HocSinh (A): " + dto.getStudent().getMaHS());
+        HocSinh hocSinh = studentMapper.toEntity(dto.getStudent());
+        studentRepository.save(hocSinh);
+        System.out.println("[Tx-Main] Hoàn thành lưu HocSinh (A)");
+
+        // -- Case 1: Save A sau đó lỗi , rồi save B
+        if("1".equals(caseNumber)) {
+            System.out.println("[Tx-Main] Tạo lỗi sau khi lưu A - Case 1");
+            // Tạo lỗi
+            throw new RuntimeException("Lỗi giả lập sau khi lưu A");
+        }
+
+        // -- Lưu kết quả học tập (save B)
+        System.out.println("[Tx-Main] Đang lưu KQHT (B) cho học sinh: " + dto.getStudent().getMaHS());
+        // Luu từng KQHT
+        for (ScoreDTO kqhtDTO : dto.getScores()) {
+            KetQuaHocTap kqht = kqhtMapper.toEntity(kqhtDTO, dto.getStudent().getMaHS());
+            MonHoc monHoc = monHocRepository.findById(kqhtDTO.getMaMH()).get();
+            kqht.setHocSinh(hocSinh); // Thiết lập quan hệ
+            kqht.setMonHoc(monHoc);
+            kqhtRepository.save(kqht);
+        }
+
+        System.out.println("[Tx-Main] Hoàn thành lưu KQHT (B)");
+
+        // -- Case 2: Save A thành công, save B, sau đó lỗi
+        if("2".equals(caseNumber)) {
+            System.out.println("[Tx-Main] Tạo lỗi sau khi lưu B - Case 2");
+            // Tạo lỗi
+            throw new RuntimeException("Lỗi giả lập sau khi lưu B");
+        }
     }
 
     //    @Override

@@ -2,6 +2,8 @@ package com.example.nodo_springboot.controller;
 
 import com.example.nodo_springboot.dto.ResponseData;
 import com.example.nodo_springboot.dto.StudentRequestDTO;
+import com.example.nodo_springboot.dto.StudentWithScoreReqDTO;
+import com.example.nodo_springboot.service.StudentProcessService;
 import com.example.nodo_springboot.service.StudentService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 public class StudentController {
 
     private final StudentService studentService;
+    private final StudentProcessService studentProcessService;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, StudentProcessService studentProcessService) {
         this.studentService = studentService;
+        this.studentProcessService = studentProcessService;
     }
 
     @GetMapping("")
@@ -55,5 +59,12 @@ public class StudentController {
 //        return studentService.createStudent(studentRequestDTO);
 //    }
 
+
+    // API create student, làm ví dụ về transactional với các propagation ở dưới service
+    @PostMapping("/create-with-transaction/{caseNumber}")
+    public void createStudentWithTransaction(@PathVariable String caseNumber,
+                                                        @RequestBody StudentWithScoreReqDTO dto) {
+        studentProcessService.processStudentCreation(caseNumber, dto);
+    }
 
 }

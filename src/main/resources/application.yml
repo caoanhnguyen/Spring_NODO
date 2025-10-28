@@ -11,5 +11,17 @@ spring:
           use_sql_comments: true
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org:
+      hibernate:
+        SQL: debug
+        type:
+            descriptor:
+                sql:
+                BasicBinder: trace
+      springframework:
+        transaction: TRACE
+        orm:
+          jpa:
+            JpaTransactionManager: TRACE
+
+

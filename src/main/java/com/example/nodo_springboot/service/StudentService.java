@@ -3,6 +3,7 @@ package com.example.nodo_springboot.service;
 import com.example.nodo_springboot.dto.PageResponseDTO;
 import com.example.nodo_springboot.dto.ResponseData;
 import com.example.nodo_springboot.dto.StudentRequestDTO;
+import com.example.nodo_springboot.dto.StudentWithScoreReqDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -19,4 +20,7 @@ public interface StudentService {
 
     ResponseData<?> deleteStudent(String maHS);
 //    ResponseData<?> createStudent(StudentRequestDTO studentRequestDTO);
+
+    void createStudentWithTransaction(String caseNumber, StudentWithScoreReqDTO dto);
+
 }
