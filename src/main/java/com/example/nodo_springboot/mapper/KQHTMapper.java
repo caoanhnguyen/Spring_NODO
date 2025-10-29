@@ -3,9 +3,9 @@ package com.example.nodo_springboot.mapper;
 import com.example.nodo_springboot.dto.ScoreDTO;
 import com.example.nodo_springboot.entities.HocSinh;
 import com.example.nodo_springboot.entities.KetQuaHocTap;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mappings;
-import org.mapstruct.Named;
+import com.example.nodo_springboot.entities.KetQuaHocTapId;
+import com.example.nodo_springboot.entities.MonHoc;
+import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.time.LocalDateTime;
@@ -36,14 +36,17 @@ public interface KQHTMapper {
 
 
 //    List<String> toDiemList(HocSinh hocSinh);
-    @Mappings({
-            @org.mapstruct.Mapping(source = "maHS", target = "id.maHS"),
-            @org.mapstruct.Mapping(source = "dto.maMH", target = "id.maMH"),
-            @org.mapstruct.Mapping(source = "dto.hocKy", target = "id.hocKy"),
-            @org.mapstruct.Mapping(source = "dto.diemThiGiuaKy", target = "diemThiGiuaKy"),
-            @org.mapstruct.Mapping(source = "dto.diemThiCuoiKy", target = "diemThiCuoiKy"),
-            @org.mapstruct.Mapping(source = "dto.ngayGioThiCuoiKy", target = "ngayGioThiCuoiKy", qualifiedByName = "stringToLocalDateTime")
-    })
-    KetQuaHocTap toEntity(ScoreDTO dto, String maHS);
+    @Mapping(source = "dto.ngayGioThiCuoiKy", target = "ngayGioThiCuoiKy", qualifiedByName = "stringToLocalDateTime")
+    @Mapping(target = "hocSinh", ignore = true)
+    @Mapping(target = "monHoc", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    KetQuaHocTap toEntity(ScoreDTO dto, @Context HocSinh hocSinh, @Context MonHoc monHoc);
+
+    @AfterMapping
+    default void setReferences(@MappingTarget KetQuaHocTap entity, ScoreDTO dto, @Context HocSinh hocSinh, @Context MonHoc monHoc) {
+        entity.setId(new KetQuaHocTapId(hocSinh.getMaHS(), monHoc.getMaMH(), dto.getHocKy()));
+        entity.setHocSinh(hocSinh);
+        entity.setMonHoc(monHoc);
+    }
 
 }

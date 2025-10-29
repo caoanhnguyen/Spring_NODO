@@ -28,20 +28,20 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
     private final LopRepository lopRepository;
-    private final KQHTRepository kqhtRepository;
     private final KQHTMapper kqhtMapper;
     private final MonHocRepository monHocRepository;
+    private final NotificationService notificationService;
 
     @PersistenceContext
     private EntityManager em;
 
-    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LopRepository lopRepository, KQHTRepository kqhtRepository, KQHTMapper kqhtMapper, MonHocRepository monHocRepository) {
+    public StudentServiceImpl(StudentRepository studentRepository, StudentMapper studentMapper, LopRepository lopRepository, KQHTMapper kqhtMapper, MonHocRepository monHocRepository, NotificationService notificationService) {
         this.studentRepository = studentRepository;
         this.studentMapper = studentMapper;
         this.lopRepository = lopRepository;
-        this.kqhtRepository = kqhtRepository;
         this.kqhtMapper = kqhtMapper;
         this.monHocRepository = monHocRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -266,40 +266,73 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void createStudentWithTransaction(String caseNumber, StudentWithScoreReqDTO dto) {
-        // Lưu học sinh (save A)
-        System.out.println("[Tx-Main] Đang lưu HocSinh (A): " + dto.getStudent().getMaHS());
+        // 1. Tạo entity Học Sinh (chưa lưu)
         HocSinh hocSinh = studentMapper.toEntity(dto.getStudent());
-        studentRepository.save(hocSinh);
-        System.out.println("[Tx-Main] Hoàn thành lưu HocSinh (A)");
 
-        // -- Case 1: Save A sau đó lỗi , rồi save B
-        if("1".equals(caseNumber)) {
-            System.out.println("[Tx-Main] Tạo lỗi sau khi lưu A - Case 1");
-            // Tạo lỗi
-            throw new RuntimeException("Lỗi giả lập sau khi lưu A");
-        }
+        // 2. [FIX N+1 SELECT]
+        // Lấy ra TẤT CẢ các mã môn học từ DTO
+        List<String> maMonHocList = dto.getScores().stream()
+                .map(ScoreDTO::getMaMH)
+                .distinct()
+                .collect(Collectors.toList());
 
-        // -- Lưu kết quả học tập (save B)
-        System.out.println("[Tx-Main] Đang lưu KQHT (B) cho học sinh: " + dto.getStudent().getMaHS());
-        // Luu từng KQHT
+        // Gọi CSDL MỘT LẦN DUY NHẤT để lấy tất cả môn học
+        // và đưa vào Map để tra cứu nhanh
+        Map<String, MonHoc> monHocMap = monHocRepository.findAllById(maMonHocList).stream()
+                .collect(Collectors.toMap(MonHoc::getMaMH, monHoc -> monHoc));
+
+        // 3. [FIX N INSERTS]
+        // Tạo list để chứa các KQHT
+        List<KetQuaHocTap> ketQuaList = new ArrayList<>();
+
+        // 4. Vòng lặp này bây giờ chạy HOÀN TOÀN TRONG BỘ NHỚ (không query CSDL)
+        System.out.println("[Tx-Main] Đang chuẩn bị KQHT (B)...");
         for (ScoreDTO kqhtDTO : dto.getScores()) {
-            KetQuaHocTap kqht = kqhtMapper.toEntity(kqhtDTO, dto.getStudent().getMaHS());
-            MonHoc monHoc = monHocRepository.findById(kqhtDTO.getMaMH()).get();
-            kqht.setHocSinh(hocSinh); // Thiết lập quan hệ
-            kqht.setMonHoc(monHoc);
-            kqhtRepository.save(kqht);
+            // Lấy MonHoc từ Map (cực nhanh)
+            MonHoc monHoc = monHocMap.get(kqhtDTO.getMaMH());
+
+            if (monHoc == null) {
+                // Quan trọng: Phải kiểm tra nếu mã môn học không tồn tại
+                throw new RuntimeException("Lỗi: Mã môn học không hợp lệ " + kqhtDTO.getMaMH());
+            }
+
+            // Dùng mapper (rất chuẩn)
+            KetQuaHocTap kqht = kqhtMapper.toEntity(kqhtDTO, hocSinh, monHoc);
+
+            // Thêm vào list, KHÔNG SAVE
+            ketQuaList.add(kqht);
         }
 
-        System.out.println("[Tx-Main] Hoàn thành lưu KQHT (B)");
+        // 5. Gán danh sách con cho cha
+        hocSinh.setKetQuaHocTapList(ketQuaList);
 
-        // -- Case 2: Save A thành công, save B, sau đó lỗi
-        if("2".equals(caseNumber)) {
-            System.out.println("[Tx-Main] Tạo lỗi sau khi lưu B - Case 2");
-            // Tạo lỗi
-            throw new RuntimeException("Lỗi giả lập sau khi lưu B");
+        // -- Case 1: Lỗi trước khi lưu bất cứ thứ gì
+        if ("1".equals(caseNumber)) {
+            System.out.println("[Tx-Main] Tạo lỗi trước khi lưu A & B - Case 1");
+            throw new RuntimeException("Lỗi giả lập trước khi lưu");
+        }
+
+        // 6. LƯU CHA MỘT LẦN DUY NHẤT
+        // Nhờ `cascade = CascadeType.ALL`,
+        // JPA sẽ tự động lưu cả HocSinh (A) và tất cả KetQuaHocTap (B)
+        System.out.println("[Tx-Main] Đang lưu HocSinh (A) VÀ cascade lưu KQHT (B)");
+        studentRepository.save(hocSinh); // Chỉ 1 lệnh save
+        System.out.println("[Tx-Main] Hoàn thành lưu A và B");
+
+        // -- Case 2: Lỗi sau khi lưu A và B
+        if ("2".equals(caseNumber)) {
+            System.out.println("[Tx-Main] Tạo lỗi sau khi lưu A & B - Case 2");
+//            throw new RuntimeException("Lỗi giả lập sau khi lưu A và B");
+        }
+
+        // -- Case 4 test Never
+        if ("4".equals(caseNumber)) {
+            System.out.println("[Tx-Main] Đang gọi NotificationService (bị cấm)...");
+
+            // Gọi service có propagation Never
+            notificationService.sendNotification(dto.getStudent().getMaHS());
         }
     }
-
     //    @Override
 //    @Transactional
 //    public ResponseData<?> createStudent(StudentRequestDTO dto) {

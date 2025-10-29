@@ -11,10 +11,12 @@ public class StudentProcessServiceImpl implements StudentProcessService {
 
     private final StudentService studentService;
     private final AuditLogService auditLogService;
+    private final NotificationService notificationService;
 
-    public StudentProcessServiceImpl(StudentService studentService, AuditLogService auditLogService) {
+    public StudentProcessServiceImpl(StudentService studentService, AuditLogService auditLogService, NotificationService notificationService) {
         this.studentService = studentService;
         this.auditLogService = auditLogService;
+        this.notificationService = notificationService;
     }
 
 
@@ -48,6 +50,14 @@ public class StudentProcessServiceImpl implements StudentProcessService {
             // Gọi Tx-Log (3). Nó chạy, commit và kết thúc ngay.
             System.out.println("[MainFlow] Ghi log 'ERROR' (lần 3 - thất bại)");
             auditLogService.log("ERROR", "Xử lý HS thất bại: " + dto.getStudent().getMaHS() + ". Lỗi: " + e.getMessage(), dto.getStudent().getMaHS());
+
+            // Đây là ngữ cảnh KHÔNG có transaction (vì Tx-Main đã rollback/đóng)
+            System.out.println("[MainFlow] Đang gọi NotificationService (hợp lệ)...");
+            try {
+                notificationService.sendNotification(dto.getStudent().getMaHS());
+            } catch (Exception notifyEx) {
+                System.err.println("Lỗi khi gửi thông báo: " + notifyEx.getMessage());
+            }
         }
     }
 }
